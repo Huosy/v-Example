@@ -1,7 +1,7 @@
 new function() {
 	var _self = this;
-	_self.width = 1000; //设置默认最大宽度
-	_self.fontSize = 100; //默认字体大小
+	_self.width = 1080; //设置默认最大宽度
+	_self.fontSize = 108; //默认字体大小
 	_self.widthProportion = function() {
 		var p = (document.body && document.body.clientWidth || document.getElementsByTagName("html")[0].offsetWidth) / _self.width;
         console.log(p);
