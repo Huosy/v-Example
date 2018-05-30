@@ -1,6 +1,6 @@
 <template>
 	<el-row class="el-main">
-		<el-form :model="form" :rules="rules" ref="form" label-width="100px">
+		<el-form ref="form" :model="form" label-width="100px">
 			<el-row class="upload" v-show="(step1)">
 				<!-- 图片展示 -->
 				<div class="cha">
@@ -150,7 +150,7 @@
 				<el-row>
 					<el-col :span="24">
 						<el-form-item label="性格优缺点">
-							<el-input type="textarea" :rows="3" placeholder="请输入内容" v-model="form.workDescribing"></el-input>
+							<el-input type="textarea" :rows="3" placeholder="请输入内容" v-model="form.character"></el-input>
 						</el-form-item>
 					</el-col>
 				</el-row>
@@ -449,7 +449,7 @@
 					emergency1Mobile: '',
 					templeway: '',
 					templeways: [{ value: '1', label: '论坛' }, { value: '2', label: '微信公众号' }, { value: '3', label: '微博' }, { value: '4', label: '山上义工' }, { value: '5', label: '山下居士' }, {value: '6',label: '亲友'}, {value: '99',label: '其他'}],
-					workDescribing: '',
+					character: '',
 					edulevel: '',
 					edulevel2: '',
 					edulevels: [{value: '10',label: '博士'}, {value: '20',label: '硕士'}, {value: '30',label: '本科'}, {value: '40',label: '大专'}, {value: '50',label: '高中及以下'}],
@@ -512,34 +512,13 @@
 					learnBuddhaname: '',
 					lecturerName: '',
 					joinTime: ''
-				},
-				rules: {
-					name: [
-						{ required: true, message: '请师兄输入姓名', trigger: 'blur' },
-						{ min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'blur' }
-					],
-					region: [
-						{ required: true, message: '请选择活动区域', trigger: 'change' }
-					],
-					date1: [
-						{ type: 'date', required: true, message: '请选择日期', trigger: 'change' }
-					],
-					date2: [
-						{ type: 'date', required: true, message: '请选择时间', trigger: 'change' }
-					],
-					type: [
-						{ type: 'array', required: true, message: '请至少选择一个活动性质', trigger: 'change' }
-					],
-					resource: [
-						{ required: true, message: '请选择活动资源', trigger: 'change' }
-					],
-					desc: [
-						{ required: true, message: '请填写活动形式', trigger: 'blur' }
-					]
-				}
+        		}
 			};
 		},
 		methods: {
+			onYearChange(picker, values) {
+				this.year = values[0];
+			},
 			uploadIMG(e) {
 				let files = e.target.files || e.dataTransfer.files;
 				if (!files.length) return;
@@ -564,20 +543,52 @@
 					let reader = new FileReader();
 
 					//将图片转成base64格式
-					let baseImg = reader.readAsDataURL(file);
-					
+					reader.readAsDataURL(file);
 					//读取成功后的回调
 					reader.onloadend = function() {
 						let result = this.result;
 						let img = new Image();
 						img.src = result;
-						console.log("********未压缩前的图片大小********"+result.length);
+						console.log("********未压缩前的图片大小********");
+						console.log(result.length);
 						img.onload = function() {
 							let data = self.compress(img);
 							self.imgUrl = result;
 
+							let blob = self.dataURItoBlob(data);
+
+							console.log("*******base64转blob对象******");
+							console.log(blob);
+
 							var formData = new FormData();
-							formData.append("file", data);
+							formData.append("file", blob);
+							console.log("********将blob对象转成formData对象********");
+							console.log(formData.get("file"));
+
+							// 上传图片发送请求;
+							/*
+							let config = {
+								headers: { "Content-Type": "multipart/form-data" }
+							};
+							self.axios.post(self.uploadUrl.url, formData, config).then(res => {
+								// console.log(res);
+								// console.log(res.data.data.resultftphost)
+								// console.log(res.data.data.resulturl)
+								// this.$emit('')
+								if (res.data.code == 200) {
+									self.$emit(
+										"getImgsrc",
+										res.data.data.resultftphost,
+										res.data.data.resulturl
+									);
+								} else {
+									self.$message({
+										message: "图片上传失败，请重试",
+										type: "warning"
+									});
+								}
+							});
+							*/
 						};
 					};
 				}
@@ -600,6 +611,24 @@
 				let ndata = canvas.toDataURL("image/jpeg", 0.1);
 				return ndata;
 			},
+			/*
+			 * base64转成bolb对象
+			dataURItoBlob(base64Data) {
+				var byteString;
+				if (base64Data.split(",")[0].indexOf("base64") >= 0)
+					byteString = atob(base64Data.split(",")[1]);
+				else byteString = unescape(base64Data.split(",")[1]);
+				var mimeString = base64Data
+					.split(",")[0]
+					.split(":")[1]
+					.split(";")[0];
+				var ia = new Uint8Array(byteString.length);
+				for (var i = 0; i < byteString.length; i++) {
+					ia[i] = byteString.charCodeAt(i);
+				}
+				return new Blob([ia], { type: mimeString });
+			},
+			*/
 			// 下一步操作
 			goNext(itemindex) {
 				if(itemindex == 1){
